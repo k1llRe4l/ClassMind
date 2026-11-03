@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from flask import Flask, redirect, render_template, request, url_for
+from flask import Flask, render_template, request, url_for
 import chromadb
 from chromadb.utils import embedding_functions
 
@@ -230,11 +230,6 @@ if collection.count() == 0:
 def index():
     total_count = collection.count()
     return render_template("index.html", count=total_count)
-
-
-@app.route("/search")
-def search_page():
-    return redirect(url_for("index"))
 
 
 @app.route("/response")
