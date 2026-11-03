@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Результаты поиска</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="results-page">
+    <main class="results-shell">
+        <h1>Результаты поиска: <span class="query">«{{ query }}»</span></h1>
+
+        {% if results %}
+            <section class="carousel" aria-label="Найденные материалы" data-carousel>
+                <div class="carousel-viewport">
+                    <div class="carousel-track">
+                        {% for item in results %}
+                            <article class="result-card" aria-label="Результат {{ loop.index }} из {{ results|length }}">
+                                <div class="result-image-frame">
+                                    {% if item.image_url %}
+                                        <img src="{{ item.image_url }}" alt="{{ item.title }}" class="result-image">
+                                    {% else %}
+                                        <div class="image-placeholder" role="img" aria-label="Изображение недоступно">
+                                            <span>Изображение недоступно</span>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="result-content">
+                                    <p class="result-number">Материал {{ loop.index }}</p>
+                                    <h2>{{ item.title }}</h2>
+                                </div>
+                            </article>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% if results|length > 1 %}
+                    <button type="button" class="carousel-button carousel-button-prev" data-carousel-prev aria-label="Предыдущий материал">←</button>
+                    <button type="button" class="carousel-button carousel-button-next" data-carousel-next aria-label="Следующий материал">→</button>
+                    <div class="carousel-dots" data-carousel-dots aria-label="Выбрать материал">
+                        {% for item in results %}
+                            <button type="button" class="carousel-dot{% if loop.first %} is-active{% endif %}" data-carousel-dot="{{ loop.index0 }}" aria-label="Показать материал {{ loop.index }}" aria-current="{% if loop.first %}true{% else %}false{% endif %}"></button>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </section>
+        {% else %}
+            <p class="empty-state">По вашему запросу ничего не найдено. Попробуйте другие слова.</p>
+        {% endif %}
+
+        <nav class="page-links">
+            <a href="{{ url_for('index') }}">На главную</a>
+        </nav>
+    </main>
+
+    {% if results|length > 1 %}
+    <script>
+        (() => {
+            const carousel = document.querySelector('[data-carousel]');
+            const track = carousel.querySelector('.carousel-track');
+            const slides = [...carousel.querySelectorAll('.result-card')];
+            const dots = [...carousel.querySelectorAll('[data-carousel-dot]')];
+            let current = 0;
+
+            const showSlide = (index) => {
+                current = (index + slides.length) % slides.length;
+                // Сдвигаем трек на ширину текущего слайда (100% от вьюпорта) умноженную на индекс
+                const slideWidth = slides[0].getBoundingClientRect().width;
+                track.style.transform = `translateX(-${current * slideWidth}px)`;
+
+                dots.forEach((dot, dotIndex) => {
+                    const active = dotIndex === current;
+                    dot.classList.toggle('is-active', active);
+                    dot.setAttribute('aria-current', active ? 'true' : 'false');
+                });
+            };
+
+            window.addEventListener('resize', () => showSlide(current));
+
+            carousel.querySelector('[data-carousel-prev]').addEventListener('click', () => showSlide(current - 1));
+            carousel.querySelector('[data-carousel-next]').addEventListener('click', () => showSlide(current + 1));
+
+            dots.forEach((dot) => dot.addEventListener('click', () => showSlide(Number(dot.dataset.carouselDot))));
+
+            let touchStartX = null;
+            carousel.addEventListener('touchstart', (event) => { touchStartX = event.changedTouches[0].clientX; }, { passive: true });
+            carousel.addEventListener('touchend', (event) => {
+                if (touchStartX === null) return;
+                const delta = event.changedTouches[0].clientX - touchStartX;
+                if (Math.abs(delta) > 45) showSlide(current + (delta < 0 ? 1 : -1));
+                touchStartX = null;
+            }, { passive: true });
+        })();
+    </script>
+    {% endif %}
+</body>
+</html>

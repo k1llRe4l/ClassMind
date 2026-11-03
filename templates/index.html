@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Поиск по материалам</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <main class="home-shell">
+        <h1>Поиск по материалам занятий</h1>
+        <p>Всего объектов в базе данных: <strong>{{ count }}</strong></p>
+        <form class="search-form" action="{{ url_for('response_page') }}" method="get">
+            <label for="query">Поисковый запрос</label>
+            <div class="search-row">
+                <input id="query" type="text" name="query" value="{{ query }}" placeholder="Например: неправильные глаголы" required>
+                <button type="submit">Найти</button>
+            </div>
+        </form>
+    </main>
+</body>
+</html>
